@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Hope Foundation - Home</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="navbar">
+        <a class="logo" href="home.html">City <span>Hope</span> Foundation</a>
+        <nav>
+            <a href="home.html" class="active">Home</a>
+            <a href="search.html">Search Events</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Static organisation content (hard-coded) -->
+        <section class="hero">
+            <h1>Every Act of Kindness Changes a Life</h1>
+            <p>
+                City Hope Foundation connects our community through charity events
+                that raise funds and awareness for local causes. Join a fun run,
+                attend a gala, or bid at an auction &mdash; every ticket is a donation.
+            </p>
+            <button class="btn-donate" onclick="scrollToEvents()">Explore Events</button>
+        </section>
+
+        <section class="org-info">
+            <div class="info-card">
+                <h3>Our Mission</h3>
+                <p>Bringing hope to our city by connecting communities through charitable events.</p>
+            </div>
+            <div class="info-card">
+                <h3>Email Us</h3>
+                <p>info@cityhope.org.au</p>
+            </div>
+            <div class="info-card">
+                <h3>Call Us</h3>
+                <p>(02) 9876 5432</p>
+            </div>
+            <div class="info-card">
+                <h3>Visit Us</h3>
+                <p>12 Harmony Street, Sydney NSW 2000</p>
+            </div>
+        </section>
+
+        <!-- Dynamic event listing (loaded from API) -->
+        <h2 class="page-title" id="events-section">Upcoming Charity Events</h2>
+        <p class="page-subtitle">Join us and make a difference. Click any event to see full details.</p>
+
+        <div class="message error" id="error-message"></div>
+        <div class="loading" id="loading">Loading events...</div>
+        <div class="event-grid" id="event-grid"></div>
+    </div>
+
+    <footer>
+        &copy; 2026 City Hope Foundation &mdash; Connecting communities, changing lives.
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        // Scroll to the events section (hero button)
+        function scrollToEvents() {
+            document.getElementById('events-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Load current & upcoming events from the API
+        async function loadEvents() {
+            const grid = document.getElementById('event-grid');
+            const loading = document.getElementById('loading');
+            const errorBox = document.getElementById('error-message');
+
+            try {
+                // Send request to the API
+                const response = await fetch(API_BASE + '/events');
+                if (!response.ok) throw new Error('Server error: ' + response.status);
+
+                // Parse the JSON response
+                const events = await response.json();
+                loading.style.display = 'none';
+
+                // Render each event as a card using DOM manipulation
+                events.forEach(ev => grid.appendChild(createEventCard(ev)));
+
+                if (events.length === 0) {
+                    grid.innerHTML = '<p class="page-subtitle">No upcoming events at the moment. Please check back soon!</p>';
+                }
+            } catch (err) {
+                loading.style.display = 'none';
+                errorBox.textContent = 'Sorry, we could not load the events. Please try again later. (' + err.message + ')';
+                errorBox.style.display = 'block';
+            }
+        }
+
+        loadEvents();
+    </script>
+</body>
+</html>

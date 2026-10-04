@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Hope Foundation - Event Details</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="navbar">
+        <a class="logo" href="home.html">City <span>Hope</span> Foundation</a>
+        <nav>
+            <a href="home.html">Home</a>
+            <a href="search.html">Search Events</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="loading" id="loading">Loading event details...</div>
+        <div class="message error" id="error-message"></div>
+
+        <!-- Event details rendered here by JavaScript -->
+        <div id="event-detail"></div>
+    </div>
+
+    <!-- "Under construction" modal (Register button) -->
+    <div class="modal-overlay" id="register-modal">
+        <div class="modal">
+            <h3>\uD83D\uDEE0\uFE0F Feature Under Construction</h3>
+            <p>This feature is currently under construction. Online registration will be available soon!</p>
+            <button class="btn" onclick="closeModal()">OK, Got It</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 City Hope Foundation &mdash; Connecting communities, changing lives.
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        // -------------------------------------------------
+        // Read the event id from the URL query string
+        // e.g. event.html?id=5
+        // -------------------------------------------------
+        function getEventIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // -------------------------------------------------
+        // Fetch event details from the API and render them
+        // -------------------------------------------------
+        async function loadEventDetails() {
+            const loading = document.getElementById('loading');
+            const errorBox = document.getElementById('error-message');
+            const detail = document.getElementById('event-detail');
+
+            const eventId = getEventIdFromUrl();
+
+            // Validation: id must exist and be a number
+            if (!eventId || isNaN(eventId)) {
+                loading.style.display = 'none';
+                errorBox.textContent = 'No valid event selected. Please choose an event from the Home or Search page.';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE + '/events/' + eventId);
+                if (response.status === 404) throw new Error('Event not found.');
+                if (!response.ok) throw new Error('Server error: ' + response.status);
+
+                const ev = await response.json();
+                loading.style.display = 'none';
+
+                const pct = ev.goal_amount > 0
+                    ? Math.min(100, Math.round(ev.raised_amount / ev.goal_amount * 100))
+                    : 0;
+
+                // Render the detail page using DOM manipulation
+                detail.innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-banner">
+                        <span class="badge">${ev.category_name}</span>
+                        <h1>${ev.event_name}</h1>
+                    </div>
+                    <div class="detail-body">
+                        <div>
+                            <h2>About This Event</h2>
+                            <p>${ev.description || 'No description available.'}</p>
+
+                            <h2>When &amp; Where</h2>
+                            <p>\uD83D\uDCC5 <strong>${formatDate(ev.event_date)}</strong></p>
+                            <p>\uD83D\uDCCD <strong>${ev.location}</strong></p>
+
+                            <h2>Purpose</h2>
+                            <p>${ev.purpose || 'General charitable cause'}</p>
+
+                            <h2>Organised By</h2>
+                            <p>${ev.org_name} &mdash; ${ev.contact_email} | ${ev.contact_phone}</p>
+                        </div>
+                        <div class="side-panel">
+                            <div class="price">${formatTicket(ev.ticket_price)} <small>per ticket</small></div>
+
+                            <div class="goal-stats">
+                                <h2 style="margin-top:0; border:none;">Goal vs. Progress</h2>
+                                <div class="row"><span>Raised:</span><strong>${formatMoney(ev.raised_amount)}</strong></div>
+                                <div class="row"><span>Goal:</span><strong>${formatMoney(ev.goal_amount)}</strong></div>
+                                <div class="progress-wrap">
+                                    <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+                                    <div class="progress-label">${pct}% of goal reached</div>
+                                </div>
+                            </div>
+
+                            <button class="btn-register" onclick="openModal()">Register / Buy Tickets</button>
+                        </div>
+                    </div>
+                </div>`;
+            } catch (err) {
+                loading.style.display = 'none';
+                errorBox.textContent = 'Could not load this event: ' + err.message;
+                errorBox.style.display = 'block';
+            }
+        }
+
+        // ---- modal helpers ----
+        function openModal() {
+            document.getElementById('register-modal').classList.add('show');
+        }
+        function closeModal() {
+            document.getElementById('register-modal').classList.remove('show');
+        }
+
+        loadEventDetails();
+    </script>
+</body>
+</html>

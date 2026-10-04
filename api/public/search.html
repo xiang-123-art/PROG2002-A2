@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Hope Foundation - Search Events</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="navbar">
+        <a class="logo" href="home.html">City <span>Hope</span> Foundation</a>
+        <nav>
+            <a href="home.html">Home</a>
+            <a href="search.html" class="active">Search Events</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Search Charity Events</h1>
+        <p class="page-subtitle">Find events by date, location or category &mdash; or combine any criteria.</p>
+
+        <!-- Search / filter form -->
+        <section class="search-panel">
+            <form id="search-form" onsubmit="return handleSearch(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="search-date">Date (or month)</label>
+                        <input type="date" id="search-date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-location">Location</label>
+                        <input type="text" id="search-location" name="location" placeholder="e.g. Sydney, Bondi...">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-category">Category</label>
+                        <select id="search-category" name="category_id">
+                            <option value="">All categories</option>
+                            <!-- Options loaded dynamically from the API -->
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex; gap:0.6rem;">
+                        <button type="submit" class="btn btn-search">Search</button>
+                        <button type="button" class="btn btn-clear" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Status / error messages (DOM manipulation) -->
+        <div class="message error" id="error-message"></div>
+        <div class="message info" id="info-message"></div>
+
+        <!-- Search results -->
+        <div id="results-heading"></div>
+        <div class="event-grid" id="result-grid"></div>
+    </div>
+
+    <footer>
+        &copy; 2026 City Hope Foundation &mdash; Connecting communities, changing lives.
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        // -------------------------------------------------
+        // Load category options into the dropdown from API
+        // -------------------------------------------------
+        async function loadCategories() {
+            const select = document.getElementById('search-category');
+            try {
+                const response = await fetch(API_BASE + '/categories');
+                const categories = await response.json();
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.category_id;
+                    opt.textContent = cat.category_name;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                showError('Could not load categories: ' + err.message);
+            }
+        }
+
+        // -------------------------------------------------
+        // Clear Filters button - reset all form fields (DOM)
+        // -------------------------------------------------
+        function clearFilters() {
+            document.getElementById('search-date').value = '';
+            document.getElementById('search-location').value = '';
+            document.getElementById('search-category').value = '';
+            hideMessages();
+            document.getElementById('result-grid').innerHTML = '';
+            document.getElementById('results-heading').innerHTML = '';
+        }
+
+        // -------------------------------------------------
+        // Handle form submission - call the search API
+        // -------------------------------------------------
+        async function handleSearch(event) {
+            event.preventDefault(); // stay on the page
+            hideMessages();
+
+            const date = document.getElementById('search-date').value;
+            const location = document.getElementById('search-location').value.trim();
+            const categoryId = document.getElementById('search-category').value;
+
+            // Client-side validation: at least one criterion must be provided
+            if (!date && !location && !categoryId) {
+                showError('Please enter at least one search criterion (date, location or category).');
+                return false;
+            }
+
+            // Build query string with the chosen criteria
+            const params = new URLSearchParams();
+            if (date) params.set('date', date);
+            if (location) params.set('location', location);
+            if (categoryId) params.set('category_id', categoryId);
+
+            const grid = document.getElementById('result-grid');
+            const heading = document.getElementById('results-heading');
+            grid.innerHTML = '<p class="loading">Searching events...</p>';
+
+            try {
+                const response = await fetch(API_BASE + '/events/search?' + params.toString());
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Search failed');
+                }
+                const events = await response.json();
+
+                grid.innerHTML = '';
+                heading.innerHTML = '<h2 class="page-title">Results</h2>' +
+                    '<p class="page-subtitle">' + events.length +
+                    ' event' + (events.length === 1 ? '' : 's') + ' found.</p>';
+
+                if (events.length === 0) {
+                    showInfo('No events matched your criteria. Try widening your search.');
+                } else {
+                    events.forEach(ev => grid.appendChild(createEventCard(ev)));
+                }
+            } catch (err) {
+                grid.innerHTML = '';
+                showError('Search error: ' + err.message);
+            }
+            return false;
+        }
+
+        // ---- message helpers (basic DOM manipulation) ----
+        function showError(msg) {
+            const box = document.getElementById('error-message');
+            box.textContent = msg;
+            box.style.display = 'block';
+        }
+        function showInfo(msg) {
+            const box = document.getElementById('info-message');
+            box.textContent = msg;
+            box.style.display = 'block';
+        }
+        function hideMessages() {
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('info-message').style.display = 'none';
+        }
+
+        // Initialise the page
+        loadCategories();
+    </script>
+</body>
+</html>
