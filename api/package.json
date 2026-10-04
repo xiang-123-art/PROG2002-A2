@@ -1,0 +1,13 @@
+{
+  "name": "charity-events-api",
+  "version": "1.0.0",
+  "description": "PROG2002 A2 - RESTful API for City Hope Foundation charity events website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0"
+  }
+}
