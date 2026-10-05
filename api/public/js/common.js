@@ -1,5 +1,5 @@
 // =====================================================
-// common.js - shared helpers for all pages
+// common.js - shared helpers for all pages (v2)
 // PROG2002 A2 - City Hope Foundation
 // =====================================================
 
@@ -32,23 +32,39 @@ const CATEGORY_ICONS = {
     'Volunteer Day': '\uD83C\uDF31'
 };
 
+// CSS banner class per category (colour-coded gradients)
+const CATEGORY_BANNERS = {
+    'Fun Run': 'ban-run',
+    'Gala Dinner': 'ban-gala',
+    'Silent Auction': 'ban-auction',
+    'Concert': 'ban-concert',
+    'Volunteer Day': 'ban-volunteer'
+};
+
 function categoryIcon(name) {
     return CATEGORY_ICONS[name] || '\u2764\uFE0F';
 }
+function categoryBanner(name) {
+    return CATEGORY_BANNERS[name] || 'ban-default';
+}
 
 // Build the HTML for one event card (used by Home and Search pages)
-function createEventCard(event) {
+function createEventCard(event, index) {
     const card = document.createElement('div');
     card.className = 'event-card';
+    // staggered entrance animation
+    card.style.animationDelay = (index * 0.09) + 's';
 
     const pct = event.goal_amount > 0
         ? Math.min(100, Math.round(event.raised_amount / event.goal_amount * 100))
         : 0;
 
     card.innerHTML = `
-        <div class="card-banner">${categoryIcon(event.category_name)}</div>
+        <div class="card-banner ${categoryBanner(event.category_name)}">
+            <span class="cat-tag">${event.category_name}</span>
+            <span class="banner-emoji">${categoryIcon(event.category_name)}</span>
+        </div>
         <div class="card-body">
-            <span class="badge">${event.category_name}</span>
             <h3>${event.event_name}</h3>
             <div class="meta">\uD83D\uDCC5 ${formatDate(event.event_date)}</div>
             <div class="meta">\uD83D\uDCCD ${event.location}</div>
@@ -61,3 +77,33 @@ function createEventCard(event) {
         </div>`;
     return card;
 }
+
+// Animated number counter (e.g. for the stats strip on the Home page).
+// format: optional function that turns the current number into display text,
+// e.g. n => '$' + n.toLocaleString('en-AU')
+function animateCounter(element, target, duration, format) {
+    const fmt = format || (n => n.toLocaleString('en-AU'));
+    const start = performance.now();
+    function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        // ease-out cubic for a natural slowdown
+        const eased = 1 - Math.pow(1 - progress, 3);
+        element.textContent = fmt(Math.round(target * eased));
+        if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+// Show / hide the back-to-top button (used on every page)
+function initBackToTop() {
+    const btn = document.createElement('button');
+    btn.className = 'to-top';
+    btn.innerHTML = '\u2191';
+    btn.title = 'Back to top';
+    btn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.appendChild(btn);
+    window.addEventListener('scroll', () => {
+        btn.classList.toggle('show', window.scrollY > 400);
+    });
+}
+document.addEventListener('DOMContentLoaded', initBackToTop);

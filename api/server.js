@@ -49,7 +49,6 @@ app.get('/api/events', async (req, res) => {
         const sql = `
             SELECT e.event_id, e.event_name, e.event_date, e.location,
                    e.ticket_price, e.goal_amount, e.raised_amount,
-                   e.image_url, e.purpose,
                    c.category_name
             FROM events e
             JOIN categories c ON e.category_id = c.category_id
@@ -125,8 +124,7 @@ app.get('/api/events/search', async (req, res) => {
         const sql = `
             SELECT e.event_id, e.event_name, e.event_date, e.location,
                    e.ticket_price, e.goal_amount, e.raised_amount,
-                   e.image_url, e.purpose,
-                   c.category_name
+                   e.purpose, e.image_url, c.category_name
             FROM events e
             JOIN categories c ON e.category_id = c.category_id
             WHERE ${conditions.join(' AND ')}

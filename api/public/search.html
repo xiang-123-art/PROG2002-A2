@@ -9,7 +9,10 @@
 <body>
     <!-- Navigation -->
     <header class="navbar">
-        <a class="logo" href="home.html">City <span>Hope</span> Foundation</a>
+        <a class="logo" href="home.html">
+            <span class="logo-icon">💚</span>
+            City <span>Hope</span> Foundation
+        </a>
         <nav>
             <a href="home.html">Home</a>
             <a href="search.html" class="active">Search Events</a>
@@ -17,30 +20,33 @@
     </header>
 
     <div class="container">
-        <h1 class="page-title">Search Charity Events</h1>
-        <p class="page-subtitle">Find events by date, location or category &mdash; or combine any criteria.</p>
+        <div class="section-head fade-in">
+            <div class="bar"></div>
+            <h1 class="page-title" style="margin-bottom:0;">Search Charity Events</h1>
+        </div>
+        <p class="page-subtitle fade-in">Find events by date, location or category &mdash; or combine any criteria.</p>
 
         <!-- Search / filter form -->
-        <section class="search-panel">
+        <section class="search-panel fade-in">
             <form id="search-form" onsubmit="return handleSearch(event)">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="search-date">Date (or month)</label>
-                        <input type="date" id="search-date" name="date">
+                        <label for="search-date">📅 Date (or month)</label>
+                        <input type="text" id="search-date" name="date" placeholder="e.g. 2026-12-25 or 2026-12">
                     </div>
                     <div class="form-group">
-                        <label for="search-location">Location</label>
+                        <label for="search-location">📍 Location</label>
                         <input type="text" id="search-location" name="location" placeholder="e.g. Sydney, Bondi...">
                     </div>
                     <div class="form-group">
-                        <label for="search-category">Category</label>
+                        <label for="search-category">🏷️ Category</label>
                         <select id="search-category" name="category_id">
                             <option value="">All categories</option>
                             <!-- Options loaded dynamically from the API -->
                         </select>
                     </div>
                     <div class="form-group" style="display:flex; gap:0.6rem;">
-                        <button type="submit" class="btn btn-search">Search</button>
+                        <button type="submit" class="btn btn-search">🔍 Search</button>
                         <button type="button" class="btn btn-clear" onclick="clearFilters()">Clear Filters</button>
                     </div>
                 </div>
@@ -57,7 +63,7 @@
     </div>
 
     <footer>
-        &copy; 2026 City Hope Foundation &mdash; Connecting communities, changing lives.
+        &copy; 2026 City Hope Foundation &mdash; Connecting communities, <span class="heart">❤</span> changing lives.
     </footer>
 
     <script src="js/common.js"></script>
@@ -100,13 +106,19 @@
             event.preventDefault(); // stay on the page
             hideMessages();
 
-            const date = document.getElementById('search-date').value;
+            const date = document.getElementById('search-date').value.trim();
             const location = document.getElementById('search-location').value.trim();
             const categoryId = document.getElementById('search-category').value;
 
             // Client-side validation: at least one criterion must be provided
             if (!date && !location && !categoryId) {
                 showError('Please enter at least one search criterion (date, location or category).');
+                return false;
+            }
+
+            // Client-side validation: date must be YYYY-MM-DD or YYYY-MM
+            if (date && !/^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$/.test(date)) {
+                showError('Invalid date format. Please use YYYY-MM-DD (e.g. 2026-12-25) or YYYY-MM (e.g. 2026-12).');
                 return false;
             }
 
@@ -129,14 +141,15 @@
                 const events = await response.json();
 
                 grid.innerHTML = '';
-                heading.innerHTML = '<h2 class="page-title">Results</h2>' +
-                    '<p class="page-subtitle">' + events.length +
+                heading.innerHTML = '<div class="section-head fade-in"><div class="bar"></div>' +
+                    '<h2 class="page-title" style="margin-bottom:0;font-size:1.5rem;">Results</h2></div>' +
+                    '<p class="page-subtitle fade-in">' + events.length +
                     ' event' + (events.length === 1 ? '' : 's') + ' found.</p>';
 
                 if (events.length === 0) {
-                    showInfo('No events matched your criteria. Try widening your search.');
+                    showInfo('No events matched your criteria. Try widening your search &mdash; for example, leave the date empty and search by location only.');
                 } else {
-                    events.forEach(ev => grid.appendChild(createEventCard(ev)));
+                    events.forEach((ev, i) => grid.appendChild(createEventCard(ev, i)));
                 }
             } catch (err) {
                 grid.innerHTML = '';

@@ -9,7 +9,10 @@
 <body>
     <!-- Navigation -->
     <header class="navbar">
-        <a class="logo" href="home.html">City <span>Hope</span> Foundation</a>
+        <a class="logo" href="home.html">
+            <span class="logo-icon">💚</span>
+            City <span>Hope</span> Foundation
+        </a>
         <nav>
             <a href="home.html" class="active">Home</a>
             <a href="search.html">Search Events</a>
@@ -19,37 +22,61 @@
     <div class="container">
         <!-- Static organisation content (hard-coded) -->
         <section class="hero">
-            <h1>Every Act of Kindness Changes a Life</h1>
+            <div class="hero-badge">✨ Non-Profit · Sydney · Since 2010</div>
+            <h1>Every Act of Kindness<br><span class="hl">Changes a Life</span></h1>
             <p>
                 City Hope Foundation connects our community through charity events
                 that raise funds and awareness for local causes. Join a fun run,
                 attend a gala, or bid at an auction &mdash; every ticket is a donation.
             </p>
-            <button class="btn-donate" onclick="scrollToEvents()">Explore Events</button>
+            <button class="btn-donate" onclick="scrollToEvents()">Explore Events ↓</button>
+        </section>
+
+        <!-- Summary stats (computed from live API data) -->
+        <section class="stats-strip" id="stats-strip" style="display:none;">
+            <div class="stat-card fade-in-1">
+                <div class="stat-num" id="stat-events">0</div>
+                <div class="stat-label">Upcoming Events</div>
+            </div>
+            <div class="stat-card fade-in-2">
+                <div class="stat-num" id="stat-categories">0</div>
+                <div class="stat-label">Event Categories</div>
+            </div>
+            <div class="stat-card fade-in-3">
+                <div class="stat-num" id="stat-goal">$0</div>
+                <div class="stat-label">Targeted by Upcoming Events</div>
+            </div>
         </section>
 
         <section class="org-info">
-            <div class="info-card">
+            <div class="info-card fade-in-1">
+                <span class="icon">🏰</span>
                 <h3>Our Mission</h3>
                 <p>Bringing hope to our city by connecting communities through charitable events.</p>
             </div>
-            <div class="info-card">
+            <div class="info-card fade-in-2">
+                <span class="icon">📧</span>
                 <h3>Email Us</h3>
                 <p>info@cityhope.org.au</p>
             </div>
-            <div class="info-card">
+            <div class="info-card fade-in-3">
+                <span class="icon">📞</span>
                 <h3>Call Us</h3>
                 <p>(02) 9876 5432</p>
             </div>
-            <div class="info-card">
+            <div class="info-card fade-in-3">
+                <span class="icon">📍</span>
                 <h3>Visit Us</h3>
                 <p>12 Harmony Street, Sydney NSW 2000</p>
             </div>
         </section>
 
         <!-- Dynamic event listing (loaded from API) -->
-        <h2 class="page-title" id="events-section">Upcoming Charity Events</h2>
-        <p class="page-subtitle">Join us and make a difference. Click any event to see full details.</p>
+        <div class="section-head fade-in">
+            <div class="bar"></div>
+            <h2 class="page-title" id="events-section" style="margin-bottom:0;">Upcoming Charity Events</h2>
+        </div>
+        <p class="page-subtitle fade-in">Join us and make a difference. Click any event to see full details.</p>
 
         <div class="message error" id="error-message"></div>
         <div class="loading" id="loading">Loading events...</div>
@@ -57,14 +84,14 @@
     </div>
 
     <footer>
-        &copy; 2026 City Hope Foundation &mdash; Connecting communities, changing lives.
+        &copy; 2026 City Hope Foundation &mdash; Connecting communities, <span class="heart">❤</span> changing lives.
     </footer>
 
     <script src="js/common.js"></script>
     <script>
         // Scroll to the events section (hero button)
         function scrollToEvents() {
-            document.getElementById('events-section').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('events-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // Load current & upcoming events from the API
@@ -83,16 +110,32 @@
                 loading.style.display = 'none';
 
                 // Render each event as a card using DOM manipulation
-                events.forEach(ev => grid.appendChild(createEventCard(ev)));
+                events.forEach((ev, i) => grid.appendChild(createEventCard(ev, i)));
 
                 if (events.length === 0) {
                     grid.innerHTML = '<p class="page-subtitle">No upcoming events at the moment. Please check back soon!</p>';
+                } else {
+                    // Animate the summary stats from live API data
+                    showStats(events);
                 }
             } catch (err) {
                 loading.style.display = 'none';
                 errorBox.textContent = 'Sorry, we could not load the events. Please try again later. (' + err.message + ')';
                 errorBox.style.display = 'block';
             }
+        }
+
+        // Build the animated stats strip from live API data
+        function showStats(events) {
+            const strip = document.getElementById('stats-strip');
+            const cats = new Set(events.map(e => e.category_name));
+            const goalSum = events.reduce((sum, e) => sum + Number(e.goal_amount), 0);
+
+            strip.style.display = 'grid';
+            animateCounter(document.getElementById('stat-events'), events.length, 900);
+            animateCounter(document.getElementById('stat-categories'), cats.size, 900);
+            animateCounter(document.getElementById('stat-goal'), goalSum, 1100,
+                n => '$' + n.toLocaleString('en-AU'));
         }
 
         loadEvents();
