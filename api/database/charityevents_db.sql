@@ -37,6 +37,7 @@ CREATE TABLE events (
     event_name VARCHAR(150) NOT NULL,
     description TEXT,
     event_date DATE NOT NULL,
+    event_time TIME NOT NULL,
     location VARCHAR(150) NOT NULL,
     purpose VARCHAR(255),
     ticket_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,   -- 0.00 means free
@@ -64,16 +65,16 @@ INSERT INTO categories (category_name) VALUES
 ('Concert'),
 ('Volunteer Day');
 
-INSERT INTO events (event_name, description, event_date, location, purpose, ticket_price, goal_amount, raised_amount, image_url, status, org_id, category_id) VALUES
+INSERT INTO events (event_name, description, event_date, event_time, location, purpose, ticket_price, goal_amount, raised_amount, image_url, status, org_id, category_id) VALUES
 -- Past events (before Oct 2026)
-('Harbour Bridge Fun Run 2026', 'A 10km charity fun run across the iconic Harbour Bridge raising funds for youth mental health services.', '2026-05-17', 'Circular Quay, Sydney', 'Youth mental health services', 45.00, 50000.00, 48250.00, 'images/funrun.jpg', 'active', 1, 1),
-('Winter Charity Gala 2026', 'An elegant black-tie dinner with live entertainment, auctions and guest speakers, supporting homeless shelters.', '2026-07-25', 'Grand Ballroom, Sydney Hilton', 'Homeless shelter support', 180.00, 80000.00, 79400.00, 'images/gala.jpg', 'active', 1, 2),
-('Art for Heart Silent Auction', 'An exclusive silent auction of donated artworks by local artists, with all proceeds going to children''s hospitals.', '2026-08-08', 'City Gallery, Darling Harbour', 'Children''s hospital equipment', 25.00, 30000.00, 31500.00, 'images/auction.jpg', 'active', 1, 3),
-('Sunset Charity Concert', 'An open-air concert featuring local bands and artists, raising funds for rural drought relief.', '2026-09-12', 'The Domain, Sydney', 'Rural drought relief', 60.00, 40000.00, 38900.00, 'images/concert.jpg', 'active', 1, 4),
+('Harbour Bridge Fun Run 2026', 'A 10km charity fun run across the iconic Harbour Bridge raising funds for youth mental health services.', '2026-05-17', '09:00:00', 'Circular Quay, Sydney', 'Youth mental health services', 45.00, 50000.00, 48250.00, 'images/funrun.jpg', 'active', 1, 1),
+('Winter Charity Gala 2026', 'An elegant black-tie dinner with live entertainment, auctions and guest speakers, supporting homeless shelters.', '2026-07-25', '18:30:00', 'Grand Ballroom, Sydney Hilton', 'Homeless shelter support', 180.00, 80000.00, 79400.00, 'images/gala.jpg', 'active', 1, 2),
+('Art for Heart Silent Auction', 'An exclusive silent auction of donated artworks by local artists, with all proceeds going to children''s hospitals.', '2026-08-08', '13:00:00', 'City Gallery, Darling Harbour', 'Children''s hospital equipment', 25.00, 30000.00, 31500.00, 'images/auction.jpg', 'active', 1, 3),
+('Sunset Charity Concert', 'An open-air concert featuring local bands and artists, raising funds for rural drought relief.', '2026-09-12', '17:30:00', 'The Domain, Sydney', 'Rural drought relief', 60.00, 40000.00, 38900.00, 'images/concert.jpg', 'active', 1, 4),
 -- Upcoming events (after Oct 2026)
-('Spring Community Fun Run', 'A family-friendly 5km fun run through the Royal Botanic Garden. All fitness levels welcome!', '2026-11-08', 'Royal Botanic Garden, Sydney', 'Community food bank', 35.00, 25000.00, 9800.00, 'images/funrun2.jpg', 'active', 1, 1),
-('Hope Gala Dinner 2026', 'Our annual flagship gala dinner with a three-course meal, live band and fundraising auction for education programs.', '2026-12-05', 'Star Event Centre, Pyrmont', 'Education programs for disadvantaged youth', 200.00, 100000.00, 45300.00, 'images/gala2.jpg', 'active', 1, 2),
-('Christmas Silent Auction', 'Bid on holiday gift hampers, experiences and art pieces at our festive silent auction supporting elderly care.', '2026-12-14', 'Town Hall, Sydney', 'Elderly care services', 20.00, 15000.00, 2100.00, 'images/auction2.jpg', 'active', 1, 3),
-('Carols by Candlelight Concert', 'Join us for an evening of Christmas carols under the stars. Free entry with donations encouraged for disaster relief.', '2026-12-21', 'Hyde Park, Sydney', 'Disaster relief fund', 0.00, 20000.00, 5400.00, 'images/concert2.jpg', 'active', 1, 4),
-('Beach Clean-Up Volunteer Day', 'Give back to the planet! A volunteer day cleaning up Bondi Beach, followed by a community BBQ.', '2026-11-21', 'Bondi Beach, Sydney', 'Ocean conservation', 0.00, 10000.00, 3200.00, 'images/volunteer.jpg', 'active', 1, 5),
-('Suspicious Investment Seminar', 'This event is under review for policy violations.', '2026-10-30', 'Unknown Venue', 'N/A', 99.00, 5000.00, 0.00, NULL, 'suspended', 1, 5);
+('Spring Community Fun Run', 'A family-friendly 5km fun run through the Royal Botanic Garden. All fitness levels welcome!', '2026-11-08', '08:00:00', 'Royal Botanic Garden, Sydney', 'Community food bank', 35.00, 25000.00, 9800.00, 'images/funrun2.jpg', 'active', 1, 1),
+('Hope Gala Dinner 2026', 'Our annual flagship gala dinner with a three-course meal, live band and fundraising auction for education programs.', '2026-12-05', '18:30:00', 'Star Event Centre, Pyrmont', 'Education programs for disadvantaged youth', 200.00, 100000.00, 45300.00, 'images/gala2.jpg', 'active', 1, 2),
+('Christmas Silent Auction', 'Bid on holiday gift hampers, experiences and art pieces at our festive silent auction supporting elderly care.', '2026-12-14', '11:00:00', 'Town Hall, Sydney', 'Elderly care services', 20.00, 15000.00, 2100.00, 'images/auction2.jpg', 'active', 1, 3),
+('Carols by Candlelight Concert', 'Join us for an evening of Christmas carols under the stars. Free entry with donations encouraged for disaster relief.', '2026-12-21', '19:00:00', 'Hyde Park, Sydney', 'Disaster relief fund', 0.00, 20000.00, 5400.00, 'images/concert2.jpg', 'active', 1, 4),
+('Beach Clean-Up Volunteer Day', 'Give back to the planet! A volunteer day cleaning up Bondi Beach, followed by a community BBQ.', '2026-11-21', '09:00:00', 'Bondi Beach, Sydney', 'Ocean conservation', 0.00, 10000.00, 3200.00, 'images/volunteer.jpg', 'active', 1, 5),
+('Suspicious Investment Seminar', 'This event is under review for policy violations.', '2026-10-30', '18:00:00', 'Unknown Venue', 'N/A', 99.00, 5000.00, 0.00, NULL, 'suspended', 1, 5);

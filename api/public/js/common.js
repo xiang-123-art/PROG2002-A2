@@ -7,10 +7,36 @@ const API_BASE = 'http://localhost:3000/api';
 
 // Format a date string (YYYY-MM-DD) as "Sat, 8 Nov 2026"
 function formatDate(dateStr) {
-    const d = new Date(dateStr + 'T00:00:00');
+    const raw = String(dateStr || '');
+    const dateOnly = raw.match(/^\d{4}-\d{2}-\d{2}/);
+    const d = dateOnly ? new Date(dateOnly[0] + 'T00:00:00') : new Date(raw);
+    if (Number.isNaN(d.getTime())) return 'Date to be confirmed';
     return d.toLocaleDateString('en-AU', {
         weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
     });
+}
+
+// Format a MySQL TIME value (HH:MM:SS) as a readable 12-hour time.
+function formatTime(timeStr) {
+    if (!timeStr) return 'Time to be confirmed';
+    const match = String(timeStr).match(/^(\d{1,2}):(\d{2})/);
+    if (!match) return String(timeStr);
+    const hours = Number(match[1]);
+    const minutes = match[2];
+    const period = hours >= 12 ? 'pm' : 'am';
+    const displayHour = hours % 12 || 12;
+    return `${displayHour}:${minutes} ${period}`;
+}
+
+function getScheduleStatus(event) {
+    if (event.schedule_status === 'past' || event.schedule_status === 'upcoming') {
+        return event.schedule_status;
+    }
+    const raw = String(event.event_date || '');
+    const dateOnly = raw.match(/^\d{4}-\d{2}-\d{2}/);
+    const eventDate = dateOnly ? new Date(dateOnly[0] + 'T23:59:59') : new Date(raw);
+    if (Number.isNaN(eventDate.getTime())) return 'upcoming';
+    return eventDate < new Date() ? 'past' : 'upcoming';
 }
 
 // Format money
@@ -58,15 +84,18 @@ function createEventCard(event, index) {
     const pct = event.goal_amount > 0
         ? Math.min(100, Math.round(event.raised_amount / event.goal_amount * 100))
         : 0;
+    const scheduleStatus = getScheduleStatus(event);
+    const scheduleLabel = scheduleStatus === 'past' ? 'Past' : 'Upcoming';
 
     card.innerHTML = `
         <div class="card-banner ${categoryBanner(event.category_name)}">
+            <span class="schedule-tag ${scheduleStatus}">${scheduleLabel}</span>
             <span class="cat-tag">${event.category_name}</span>
             <span class="banner-emoji">${categoryIcon(event.category_name)}</span>
         </div>
         <div class="card-body">
             <h3>${event.event_name}</h3>
-            <div class="meta">\uD83D\uDCC5 ${formatDate(event.event_date)}</div>
+            <div class="meta">\uD83D\uDCC5 ${formatDate(event.event_date)} at ${formatTime(event.event_time)}</div>
             <div class="meta">\uD83D\uDCCD ${event.location}</div>
             <div class="meta">\uD83C\uDFAB ${formatTicket(event.ticket_price)}</div>
             <div class="progress-wrap">

@@ -75,6 +75,7 @@
             const select = document.getElementById('search-category');
             try {
                 const response = await fetch(API_BASE + '/categories');
+                if (!response.ok) throw new Error('Server error: ' + response.status);
                 const categories = await response.json();
                 categories.forEach(cat => {
                     const opt = document.createElement('option');
@@ -147,7 +148,7 @@
                     ' event' + (events.length === 1 ? '' : 's') + ' found.</p>';
 
                 if (events.length === 0) {
-                    showInfo('No events matched your criteria. Try widening your search &mdash; for example, leave the date empty and search by location only.');
+                    showInfo('No events matched your criteria. Try widening your search - for example, leave the date empty and search by location only.');
                 } else {
                     events.forEach((ev, i) => grid.appendChild(createEventCard(ev, i)));
                 }

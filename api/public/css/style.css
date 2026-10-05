@@ -297,6 +297,19 @@ body {
     font-weight: 600;
     letter-spacing: 0.3px;
 }
+.event-card .card-banner .schedule-tag {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.event-card .card-banner .schedule-tag.upcoming { background: rgba(4, 61, 41, 0.78); }
+.event-card .card-banner .schedule-tag.past { background: rgba(75, 85, 99, 0.88); }
 .event-card .card-banner .banner-emoji { animation: floatSoft 4s ease-in-out infinite; }
 
 /* per-category banner gradients (set via JS class) */
@@ -475,6 +488,17 @@ body {
     letter-spacing: 0.5px;
     box-shadow: 0 4px 14px rgba(245, 166, 35, 0.45);
 }
+.detail-banner .detail-status {
+    display: inline-block;
+    margin-left: 0.5rem;
+    color: #fff;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+.detail-banner .detail-status.upcoming { background: rgba(4, 61, 41, 0.82); }
+.detail-banner .detail-status.past { background: rgba(75, 85, 99, 0.9); }
 .detail-banner h1 { margin-top: 1rem; font-size: clamp(1.5rem, 3.5vw, 2.2rem); text-shadow: 0 2px 16px rgba(0,0,0,0.3); }
 
 .detail-body { padding: 2.2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }

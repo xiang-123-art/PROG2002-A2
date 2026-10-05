@@ -15,7 +15,7 @@ PROG2002-A2/
 │       ├── event.html          # Event detail page
 │       ├── css/style.css
 │       └── js/common.js
-└── PROG2002 A2 Report - Filled.docx
+└── PROG2002 A2 Report.docx
 ```
 
 ## How to Run
@@ -48,3 +48,15 @@ Browser: http://localhost:3000/home.html
 | GET | /api/events/search?date=&location=&category_id= | Filter events |
 | GET | /api/events/:id | Full event details |
 | GET | /api/health | Health check |
+
+Event records include both a date and time. API event responses also include a
+calculated `schedule_status` value (`past` or `upcoming`) so the client can label
+events consistently.
+
+## Submission Files
+
+- `PROG2002 A2 Report.docx`
+- `XiangHuA2-api.zip`
+- `XiangHuA2-clientside.zip`
+- GitHub repository link
+- SCU OneDrive demo video link (maximum 15 minutes)

@@ -9,11 +9,12 @@ const mysql = require('mysql2');
 
 // Connection pool: efficient reuse of database connections
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '',          // XAMPP default MySQL root has no password
-    database: 'charityevents_db',
-    port: 3306,
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '', // XAMPP default root has no password
+    database: process.env.DB_NAME || 'charityevents_db',
+    port: Number(process.env.DB_PORT) || 3306,
+    dateStrings: true,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -24,7 +25,7 @@ const db = pool.promise();
 
 // Quick connectivity check when this module is first loaded
 db.query('SELECT 1')
-    .then(() => console.log('[event_db] Connected to MySQL database "charityevents_db"'))
+    .then(() => console.log(`[event_db] Connected to MySQL database "${process.env.DB_NAME || 'charityevents_db'}"`))
     .catch(err => console.error('[event_db] Database connection failed:', err.message));
 
 module.exports = db;

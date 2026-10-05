@@ -16,7 +16,23 @@ const path = require('path');
 const db = require('./event_db');
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+
+function isValidIsoDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return false;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year &&
+        date.getUTCMonth() === month - 1 &&
+        date.getUTCDate() === day;
+}
+
+function isValidIsoMonth(value) {
+    return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
 
 // Serve the client-side website as static files from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -47,14 +63,16 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/events', async (req, res) => {
     try {
         const sql = `
-            SELECT e.event_id, e.event_name, e.event_date, e.location,
-                   e.ticket_price, e.goal_amount, e.raised_amount,
-                   c.category_name
+            SELECT e.event_id, e.event_name, e.event_date, e.event_time,
+                   e.location, e.purpose, e.image_url, e.ticket_price,
+                   e.goal_amount, e.raised_amount, c.category_name,
+                   CASE WHEN e.event_date < CURDATE() THEN 'past'
+                        ELSE 'upcoming' END AS schedule_status
             FROM events e
             JOIN categories c ON e.category_id = c.category_id
             WHERE e.status = 'active'
               AND e.event_date >= CURDATE()
-            ORDER BY e.event_date ASC`;
+            ORDER BY e.event_date ASC, e.event_time ASC`;
         const [rows] = await db.query(sql);
         res.json(rows);
     } catch (err) {
@@ -95,10 +113,10 @@ app.get('/api/events/search', async (req, res) => {
         const params = [];
 
         if (date) {
-            if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            if (isValidIsoDate(date)) {
                 conditions.push('e.event_date = ?');
                 params.push(date);
-            } else if (/^\d{4}-\d{2}$/.test(date)) {
+            } else if (isValidIsoMonth(date)) {
                 // Allow "YYYY-MM" to match the whole month
                 conditions.push("DATE_FORMAT(e.event_date, '%Y-%m') = ?");
                 params.push(date);
@@ -113,22 +131,24 @@ app.get('/api/events/search', async (req, res) => {
             params.push(`%${location.trim()}%`);
         }
         if (category_id) {
-            const catId = parseInt(category_id, 10);
-            if (isNaN(catId)) {
+            if (!/^\d+$/.test(category_id)) {
                 return res.status(400).json({ message: 'Invalid category id.' });
             }
+            const catId = Number(category_id);
             conditions.push('e.category_id = ?');
             params.push(catId);
         }
 
         const sql = `
-            SELECT e.event_id, e.event_name, e.event_date, e.location,
-                   e.ticket_price, e.goal_amount, e.raised_amount,
-                   e.purpose, e.image_url, c.category_name
+            SELECT e.event_id, e.event_name, e.event_date, e.event_time,
+                   e.location, e.purpose, e.image_url, e.ticket_price,
+                   e.goal_amount, e.raised_amount, c.category_name,
+                   CASE WHEN e.event_date < CURDATE() THEN 'past'
+                        ELSE 'upcoming' END AS schedule_status
             FROM events e
             JOIN categories c ON e.category_id = c.category_id
             WHERE ${conditions.join(' AND ')}
-            ORDER BY e.event_date ASC`;
+            ORDER BY e.event_date ASC, e.event_time ASC`;
 
         const [rows] = await db.query(sql, params);
         res.json(rows);
@@ -144,13 +164,15 @@ app.get('/api/events/search', async (req, res) => {
 // -----------------------------------------------------
 app.get('/api/events/:id', async (req, res) => {
     try {
-        const eventId = parseInt(req.params.id, 10);
-        if (isNaN(eventId)) {
+        if (!/^\d+$/.test(req.params.id)) {
             return res.status(400).json({ message: 'Invalid event id.' });
         }
+        const eventId = Number(req.params.id);
 
         const sql = `
             SELECT e.*, c.category_name, o.org_name,
+                   CASE WHEN e.event_date < CURDATE() THEN 'past'
+                        ELSE 'upcoming' END AS schedule_status,
                    o.contact_email, o.contact_phone
             FROM events e
             JOIN categories c ON e.category_id = c.category_id

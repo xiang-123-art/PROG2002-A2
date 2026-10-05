@@ -85,12 +85,15 @@
                 const pct = ev.goal_amount > 0
                     ? Math.min(100, Math.round(ev.raised_amount / ev.goal_amount * 100))
                     : 0;
+                const scheduleStatus = getScheduleStatus(ev);
+                const scheduleLabel = scheduleStatus === 'past' ? 'Past Event' : 'Upcoming Event';
 
                 // Render the detail page using DOM manipulation
                 detail.innerHTML = `
                 <div class="detail-card">
                     <div class="detail-banner">
                         <span class="badge">${categoryIcon(ev.category_name)} ${ev.category_name}</span>
+                        <span class="detail-status ${scheduleStatus}">${scheduleLabel}</span>
                         <h1>${ev.event_name}</h1>
                     </div>
                     <div class="detail-body">
@@ -100,6 +103,7 @@
 
                             <h2>📅 When &amp; Where</h2>
                             <div class="detail-value">📅 <strong>${formatDate(ev.event_date)}</strong></div>
+                            <div class="detail-value">🕒 <strong>${formatTime(ev.event_time)}</strong></div>
                             <div class="detail-value">📍 <strong>${ev.location}</strong></div>
 
                             <h2>🎯 Purpose</h2>
